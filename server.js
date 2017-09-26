@@ -14,6 +14,60 @@ const STATUS_USER_ERROR = 422;
 app.use(bodyParser.json());
 
 // Your API will be built out here.
+app.get('/users', (req, res) => {
+  Person.find({}, (err, users) => {
+    if (err) {
+      res.status(STATUS_USER_ERROR);
+      res.json({'Error fetching users: ': err.message});
+      return;
+    }
+    res.json(users);
+  });
+});
+
+
+app.get('/users/:direction', (req, res) => {
+  const { direction } = req.params;
+  Person.find({}).sort({'firstName': direction})
+  .exec((err, users) => {
+    if (err) {
+      res.status(STATUS_USER_ERROR);
+      res.json({'Error finding user': err.message});
+      return;
+    }
+    res.json(users);
+  });
+});
+
+
+app.get('/user-get-friends/:id', (req, res) => {
+  const { id } = req.params;
+  Person.findById(id)
+  .select("friends")
+  .exec((err, userFriends) => {
+    if (err) {
+      res.status(STATUS_USER_ERROR);
+      res.json({ "Error fetching user's friends": err.message });
+      return;
+    }
+    res.json(userFriends);
+  });
+});
+
+
+app.put('/users/:id', (req, res) => {
+  const { id } = req.params;
+  const { firstName, lastName } = req.body;
+  Person.findByIdAndUpdate(id, {firstName, lastName})
+    .exec((err, updateUser) => {
+      if (err) {
+        res.status(STATUS_USER_ERROR);
+        res.json({"Error updating user": err.messge});
+        return;
+      }
+      res.json(updateUser)
+    });
+  });
 
 
 mongoose.Promise = global.Promise;
